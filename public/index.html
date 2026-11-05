@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Music Generator</h1>
+      <p class="sub">Describe a song and AI will compose it. Each request returns two versions.</p>
+    </header>
+
+    <form id="form" novalidate>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-mode="simple" role="tab" aria-selected="true">Simple</button>
+        <button type="button" class="tab" data-mode="custom" role="tab" aria-selected="false">Custom</button>
+      </div>
+
+      <div class="simple-only">
+        <label for="prompt">Describe your song <span class="count" data-for="prompt" data-max="3000"></span></label>
+        <textarea id="prompt" rows="4" maxlength="3000" placeholder="An upbeat summer song about a road trip along the beach"></textarea>
+      </div>
+
+      <div class="custom-only" hidden>
+        <label for="title">Title <span class="count" data-for="title" data-max="80"></span></label>
+        <input id="title" maxlength="80" placeholder="Ocean Drive">
+      </div>
+
+      <label for="style">Style <span class="count" data-for="style" data-max="1000"></span></label>
+      <input id="style" maxlength="1000" placeholder="pop, acoustic guitar, warm female vocals">
+
+      <label class="check"><input type="checkbox" id="instrumental"> Instrumental (no vocals)</label>
+
+      <div class="lyrics-wrap">
+        <label for="lyrics">Lyrics <span class="hint simple-only">(optional — leave empty to let AI write them)</span>
+          <span class="count" data-for="lyrics" data-max="5000"></span></label>
+        <textarea id="lyrics" rows="6" maxlength="5000" placeholder="[Verse]&#10;Windows down, the sun is high..."></textarea>
+      </div>
+
+      <div class="custom-only" hidden>
+        <label for="negativeTags">Styles to avoid</label>
+        <input id="negativeTags" maxlength="1000" placeholder="heavy metal, distorted drums">
+        <div class="row">
+          <div>
+            <label for="vocalGender">Vocals</label>
+            <select id="vocalGender">
+              <option value="">Any</option>
+              <option value="f">Female</option>
+              <option value="m">Male</option>
+            </select>
+          </div>
+          <div>
+            <label for="duration">Length (seconds)</label>
+            <input id="duration" type="number" min="10" max="360" step="1" placeholder="auto">
+          </div>
+        </div>
+      </div>
+
+      <label for="model">Model</label>
+      <select id="model">
+        <option value="V6">V6 — best quality (recommended)</option>
+        <option value="V6_WILD">V6 Wild — bolder, more experimental</option>
+        <option value="V6_MINI">V6 Mini — faster</option>
+      </select>
+
+      <button type="submit" id="submit">Generate music</button>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </form>
+
+    <section id="results" aria-live="polite"></section>
+
+    <footer>Songs are stored by the provider for 14 days — download the ones you want to keep.</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
