@@ -95,6 +95,7 @@ function render(tracks) {
           <audio controls preload="none" src="${esc(src)}"></audio>
           ${t.audioUrl ? `<p><a href="${esc(t.audioUrl)}" target="_blank" rel="noopener" download>Download MP3</a></p>` : `<p class="tags">Streaming preview — download available when finished.</p>`}
         </div>
+        ${t.lyrics ? `<details class="lyrics" open><summary>Lyrics</summary><pre>${esc(t.lyrics)}</pre></details>` : ""}
       </article>`;
     })
     .join("");
@@ -117,7 +118,7 @@ async function poll(taskId) {
     if (data.failed) throw new Error(data.error || `Generation failed (${data.status}).`);
 
     // Only re-render when something changed, so the audio players don't reset mid-play.
-    const key = JSON.stringify(data.tracks.map((t) => [t.id, t.audioUrl, t.streamAudioUrl]));
+    const key = JSON.stringify(data.tracks.map((t) => [t.id, t.audioUrl, t.streamAudioUrl, t.lyrics]));
     if (key !== lastRendered) {
       render(data.tracks);
       lastRendered = key;

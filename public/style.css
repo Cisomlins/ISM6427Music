@@ -77,6 +77,12 @@ textarea { resize: vertical; }
 .track .tags { margin: 2px 0 10px; color: var(--muted); font-size: .9rem; }
 .track audio { width: 100%; }
 .track a { color: var(--accent); font-weight: 600; font-size: .9rem; }
+.lyrics { grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: 12px; }
+.lyrics summary { font-weight: 600; cursor: pointer; }
+.lyrics pre {
+  margin: 10px 0 0; white-space: pre-wrap; word-wrap: break-word;
+  font: inherit; line-height: 1.6; max-height: 420px; overflow-y: auto;
+}
 
 footer { margin-top: 32px; color: var(--muted); font-size: .85rem; text-align: center; }
 

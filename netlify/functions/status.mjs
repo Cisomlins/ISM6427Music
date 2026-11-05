@@ -18,6 +18,8 @@ export default async (req) => {
       audioUrl: t.audio_url || t.audioUrl || "",
       streamAudioUrl: t.stream_audio_url || t.streamAudioUrl || "",
       imageUrl: t.image_url || t.imageUrl || "",
+      // Per the docs, each track's lyrics are returned in its `prompt` field.
+      lyrics: t.prompt || "",
     }));
     return json(200, {
       status: data?.status || "PENDING",
