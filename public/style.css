@@ -143,6 +143,30 @@ select option { background: #111; }
 .switch input:focus-visible + .knob { outline: 2px solid var(--accent-hi); outline-offset: 2px; }
 .switch-row { min-height: 44px; color: var(--text); font-weight: 500; font-size: 14px; }
 
+/* Voice dictation: mic + language pill in the corner of a textarea */
+.dictate { position: relative; display: flex; flex-direction: column; }
+.dictate textarea { padding-bottom: 60px; }
+.dictate-tools { position: absolute; right: 8px; bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.lang-pill {
+  height: 36px; min-width: 48px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--glass); color: var(--text); font: 600 12px Poppins, sans-serif; letter-spacing: 0.04em;
+}
+.mic {
+  width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.4); color: var(--on-accent);
+  background: linear-gradient(180deg, var(--accent), var(--accent-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.mic .i-stop { display: none; fill: currentColor; stroke: none; }
+.mic[aria-pressed="true"] { animation: mic-pulse 1.4s ease-out infinite; }
+.mic[aria-pressed="true"] .i-mic { display: none; }
+.mic[aria-pressed="true"] .i-stop { display: block; }
+@keyframes mic-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-hi) 70%, transparent); }
+  100% { box-shadow: 0 0 0 16px transparent; }
+}
+.dictate.listening textarea { border-color: var(--accent-hi); }
+
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer;
@@ -260,4 +284,5 @@ select option { background: #111; }
 @media (prefers-reduced-motion: reduce) {
   :root, .backdrop-img, .orb, .ticks span { transition: none; }
   .status-card[data-state="working"] .spin { animation: none; }
+  .mic[aria-pressed="true"] { animation: none; outline: 2px solid var(--accent-hi); outline-offset: 2px; }
 }

@@ -23,6 +23,7 @@ let running = false;
 
 /* ---------------- Views ---------------- */
 function show(view) {
+  stopDictation();
   for (const v of ["Create", "Songs", "Player"]) $("view" + v).hidden = v.toLowerCase() !== view;
   if (view !== "player") $("audio").pause();
   window.scrollTo({ top: 0 });
@@ -159,6 +160,7 @@ CHIPS.forEach((c) => {
 $("style").addEventListener("input", syncOrbs);
 
 $("instrumental").addEventListener("change", (e) => {
+  if (e.target.checked) stopDictation();
   document.querySelector(".lyrics-wrap").hidden = e.target.checked;
 });
 
@@ -169,6 +171,115 @@ document.querySelectorAll(".count").forEach((c) => {
   field.addEventListener("input", update);
   update();
 });
+
+/* ---------------- Voice dictation (browser speech recognition) ---------------- */
+// Chrome/Edge/Safari only; the mic is simply not shown where unsupported.
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const LANGS = [
+  { code: "en-US", label: "EN" },
+  { code: "pt-BR", label: "PT" },
+];
+let langIdx = (() => {
+  try {
+    const saved = localStorage.getItem("dictationLang");
+    const i = LANGS.findIndex((l) => l.code === saved);
+    if (i >= 0) return i;
+  } catch {}
+  return (navigator.language || "").toLowerCase().startsWith("pt") ? 1 : 0;
+})();
+let activeDictation = null; // { rec, field, wrap, mic }
+
+function stopDictation() {
+  if (activeDictation) activeDictation.rec.stop();
+}
+
+function syncLangPills() {
+  document.querySelectorAll(".lang-pill").forEach((p) => {
+    p.textContent = LANGS[langIdx].label;
+    p.setAttribute("aria-label", `Dictation language: ${LANGS[langIdx].label === "EN" ? "English" : "Portuguese"}. Tap to switch.`);
+  });
+}
+
+function startDictation(field, wrap, mic) {
+  stopDictation();
+  const rec = new Recognition();
+  rec.lang = LANGS[langIdx].code;
+  rec.continuous = true;
+  rec.interimResults = true;
+  const max = Number(field.maxLength) > 0 ? field.maxLength : Infinity;
+  const before = field.value.replace(/\s+$/, "");
+  const sep = before ? (field.id === "lyrics" ? "\n" : " ") : "";
+
+  rec.onresult = (e) => {
+    // Rebuild from the whole session each time (robust to browsers that
+    // re-send earlier results).
+    const spoken = Array.from(e.results, (r) => r[0].transcript.trim()).filter(Boolean).join(" ");
+    field.value = (before + sep + spoken).slice(0, max);
+    field.dispatchEvent(new Event("input"));
+  };
+  rec.onerror = (e) => {
+    const msg = {
+      "not-allowed": "Microphone access is blocked. Allow it in your browser's site settings to use voice input.",
+      "service-not-allowed": "Voice input isn't available in this browser.",
+      "audio-capture": "No microphone was found.",
+      network: "Voice input needs an internet connection.",
+    }[e.error];
+    if (msg) $("formError").textContent = msg;
+  };
+  rec.onend = () => {
+    wrap.classList.remove("listening");
+    mic.setAttribute("aria-pressed", "false");
+    mic.setAttribute("aria-label", "Speak instead of typing");
+    if (activeDictation?.rec === rec) activeDictation = null;
+  };
+
+  try {
+    rec.start();
+  } catch {
+    return;
+  }
+  activeDictation = { rec, field, wrap, mic };
+  $("formError").textContent = "";
+  wrap.classList.add("listening");
+  mic.setAttribute("aria-pressed", "true");
+  mic.setAttribute("aria-label", "Stop voice input");
+}
+
+if (Recognition) {
+  document.querySelectorAll("textarea[data-dictate]").forEach((field) => {
+    const wrap = document.createElement("div");
+    wrap.className = "dictate";
+    field.parentNode.insertBefore(wrap, field);
+    wrap.appendChild(field);
+
+    const tools = document.createElement("div");
+    tools.className = "dictate-tools";
+    tools.innerHTML = `
+      <button type="button" class="lang-pill"></button>
+      <button type="button" class="mic" aria-pressed="false" aria-label="Speak instead of typing">
+        <svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        <svg class="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>
+      </button>`;
+    wrap.appendChild(tools);
+    const mic = tools.querySelector(".mic");
+
+    mic.addEventListener("click", () => {
+      if (activeDictation?.field === field) stopDictation();
+      else startDictation(field, wrap, mic);
+    });
+    tools.querySelector(".lang-pill").addEventListener("click", () => {
+      langIdx = (langIdx + 1) % LANGS.length;
+      try { localStorage.setItem("dictationLang", LANGS[langIdx].code); } catch {}
+      syncLangPills();
+      // Restart in the new language if currently listening in this box.
+      if (activeDictation?.field === field) {
+        stopDictation();
+        setTimeout(() => startDictation(field, wrap, mic), 250);
+      }
+    });
+  });
+  syncLangPills();
+}
 
 // Length slider with glowing ticks
 const TICKS = 11;
@@ -348,6 +459,7 @@ async function poll(taskId) {
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (running) return;
+  stopDictation();
   running = true;
   $("submit").disabled = true;
   $("formError").textContent = "";
