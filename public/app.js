@@ -142,7 +142,8 @@ VIBES.forEach((v, i) => {
   b.className = "orb";
   b.textContent = v;
   b.dataset.term = v;
-  b.style.setProperty("--o", (i * 40) % 360 - 60);
+  b.style.setProperty("--o", [0, -12, 10, -6, 14][i % 5]);
+  b.style.setProperty("--dl", ["0%", "-6%", "6%", "-10%", "3%"][i % 5]);
   b.setAttribute("aria-pressed", "false");
   b.addEventListener("click", () => toggleTerm(v));
   $("orbs").appendChild(b);
