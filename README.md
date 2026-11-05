@@ -34,8 +34,9 @@ SUNO_API_KEY=your_key netlify dev
 
 | Path | Purpose |
 |---|---|
-| `public/index.html`, `style.css`, `app.js` | UI: simple/custom modes, progress, players, downloads |
+| `public/index.html`, `style.css`, `app.js` | UI ("Ember" design): Create → Your songs → Now playing; colors follow the album cover (aqua before any song) |
 | `netlify/functions/generate.mjs` | Validates input per SunoAPI rules, starts a task |
 | `netlify/functions/status.mjs` | Polls task status, returns simplified track list |
+| `netlify/functions/cover.mjs` | Re-serves a cover image from our domain so the browser can read its colors |
 | `netlify/functions/callback.mjs` | No-op endpoint for SunoAPI's required callback |
 | `netlify/lib/suno.mjs` | Shared fetch helper (auth header, error handling) |
